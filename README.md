@@ -72,4 +72,4 @@ Recognized escaped chars and its interpretation:
 		...
 		\c_ = 31
 	(any invalid chars will terminate the interpretation)
-	*/
+
