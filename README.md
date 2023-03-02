@@ -2,14 +2,15 @@
 Convert string with escaped chars to its interpreted binary string
 
 ## prototype
-Returns the length of the interpreted string hold in the buf.
 
 	int escaparse(const char *source, char *buf, int bufsize, int *outpos);
 
+	Returns the length of the interpreted string hold in the buf.
+
 	Upon error not enough buf size, the function will return
 	the negative value to indicate error, just flip it back
-	or use abs to render the original value (the successful
-	interpreted string so far).
+	or use abs to render the original value (the length of
+	the successful interpreted string so far).
 
 	Arguments:
 	- source is the c (NULL-terminated) string to be processed.
