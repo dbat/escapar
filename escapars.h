@@ -20,10 +20,12 @@ int escaparse(const char *source, char *buf, int bufsize, int *outpos);
 
 	- bufsize is buffer size, minimum is 4 (size of dword).
 
-		bufsize must have enough space for interpreted string,
-		could be max. +1/3rd extra from the original string size
-		eg. \X0\X0\X0\X0 will need 16 bytes.
-		On the other side, \Y000000000000000 only need 1 byte
+		bufsize must have enough space for the interpreted
+		string. Although most often than not it yields in
+		size less than the original, it could be up to +1/3rd
+		extra from the original string size, For example,
+		\X0 (3 bytes) will result in 00 00 00 00 (4 bytes).
+		On the other hand, \Y000000000000 only needx 1 byte
 
 		For each iteration, it needs at least 4 bytes to allocate
 		int32 result, therefore bufsize must be at least 4 bytes;
