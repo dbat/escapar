@@ -39,17 +39,20 @@ TEST
 	\c430\D25631287820\03465433\Y00000000663433\
 	a\ \1"\c430\D25631287820\03\r\n46\cG5433\Y00000000663433\\
 	a\ \1"\c430\D25631287820\03\r\n46\cG5433\Y00000000663433\\\x23\X45\
-
+	// "\X4f055610\Xe0ecf7bd\Xc88d98dd\Xac6f83f1"
 */
 
-int escaparse(const char *source, char *buf, int bufsize, int *outpos) {
+int escaparse(const char *source, char *buf, int bufsize, int *outpos)
+{
 	int i, n, x, result;
 	char k, cc, c;
 	const char *base = source;
 	char *first = buf, *last = buf + bufsize - MINBUFSIZE; // dword
 	int broken, atEOF, numscan, instate = FALSE;
+
 	if (!source || (bufsize < MINBUFSIZE)) return 0;
 	if (outpos) *outpos = 0;
+
 	while ((c = *source++) && (buf <= last)) {
 		atEOF = !*source;
 		if(c == '\\') {
@@ -57,13 +60,19 @@ int escaparse(const char *source, char *buf, int bufsize, int *outpos) {
 				// FIRST dig into state machine
 				// should the last \ be thrown away?
 				// comment the ifs below to purge the last orphaned "\"
-				if (atEOF) *buf++ = c;
+				if (atEOF)
+					*buf++ = c;
 				continue;
 			}
 			//if (!instate) { *buf++ = c; continue; }
 		}
-		if (!instate) { *buf++ = c; continue; }
-		instate = FALSE; broken = FALSE;
+		if (!instate) {
+			 *buf++ = c;
+			 continue;
+		}
+
+		instate = FALSE;
+		broken = FALSE;
 
 		switch(c) {
 			// check escapes that needs a valid arg
@@ -73,7 +82,10 @@ int escaparse(const char *source, char *buf, int bufsize, int *outpos) {
 			case 'x': case 'y': case 'X': case 'Y': k = *source|0x20; broken = atEOF || isnotdghex(k); break;
 		}
 
-		if (broken) { *buf++ = c; continue; }
+		if (broken) {
+			*buf++ = c;
+			continue;
+		}
 
 		n = 0; numscan = FALSE;
 		switch (c) {
@@ -86,22 +98,32 @@ int escaparse(const char *source, char *buf, int bufsize, int *outpos) {
 			case 'd': case 'D': x = c=='d' ? 0xff+1 : (unsigned)-1/10;
 				while(c = *source++) {
 					if isnotdgnum(c) {
-						if (numscan) buf += putnumber(buf, n);
-						if (c == '\\') source--; // revert back
-						else *buf++ = c;
-						numscan = FALSE; break;
-					} else numscan = TRUE;
+						if (numscan)
+							buf += putnumber(buf, n);
+						if (c == '\\')
+							source--; // revert back
+						else
+							*buf++ = c;
+						numscan = FALSE;
+						break;
+					}
+					else
+						numscan = TRUE;
 					k = c - '0';
-					if((unsigned)n < (unsigned)x) n = n * 10 + k;
+					if((unsigned)n < (unsigned)x)
+						n = n * 10 + k;
 					else {
 						buf += putnumber(buf, n);
 						*buf++ = c;
-						numscan = FALSE; break;
+						numscan = FALSE;
+						break;
 					}
 				}
 				// only happened if c == NULL
-				if (numscan) buf += putnumber(buf, n);
-				if(!c) source--; // revert back
+				if (numscan)
+					buf += putnumber(buf, n);
+				if(!c)
+					source--; // revert back
 			break;
 
 			case 'f': *buf++ = '\f'; break;
@@ -116,8 +138,12 @@ int escaparse(const char *source, char *buf, int bufsize, int *outpos) {
 				n = hextonum(k);
 				c = *++source;
 				k = c | 0x20;
-				if isnotdghex(k) *buf++ = n;
-				else { *buf++ = n<<4 | hextonum(k); source++; }  // don't forget to inc pointer
+				if isnotdghex(k)
+					*buf++ = n;
+				else {
+					*buf++ = n<<4 | hextonum(k);
+					source++; // don't forget to inc pointer
+				}
 			break;
 
 			case 'y': // 4digits hex = WORD
@@ -127,11 +153,16 @@ int escaparse(const char *source, char *buf, int bufsize, int *outpos) {
 				while((c = *source++) && (i--)) {
 					k = c | 0x20;
 					if isnotdghex(k) {
-						if (numscan) buf += putnumhex(buf, n, cc == 'X');
-						if (c == '\\') source--; // revert back
-						else *buf++ = c;
-						numscan = FALSE; break;
-					} else numscan = TRUE;
+						if (numscan)
+							buf += putnumhex(buf, n, cc == 'X');
+						if (c == '\\')
+							source--; // revert back
+						else
+							*buf++ = c;
+						numscan = FALSE;
+						break;
+					}
+					else numscan = TRUE;
 					if((unsigned)n < (unsigned)(1<<28))
 						n = (n<<4) | hextonum(k);
 					else {
@@ -144,37 +175,52 @@ int escaparse(const char *source, char *buf, int bufsize, int *outpos) {
 				// only happened if c == NULL, or i == 0
 				if (numscan) {
 					buf += putnumhex(buf, n, cc = 'X');
-					if (c) *buf++ = c;
+					if (c == '\\')
+						source--; // revert back
+					else
+						if (c)
+							*buf++ = c;
 				}
-				if(!c) source--; // revert back
+				if(!c)
+					source--; // revert back
 			break;
 
 			case 'Y': // free-style hex number
 				while(c = *source++) {
 					k = (c | 0x20);
 					if (!isdghex(k)) {
-						if (numscan) buf += putnumber(buf, n);
-						if (c == '\\') source--; // revert back
-						else *buf++ = c;
-						numscan = FALSE; break;
-					} else numscan = TRUE;
+						if (numscan)
+							buf += putnumber(buf, n);
+						if (c == '\\')
+							source--; // revert back
+						else
+							*buf++ = c;
+						numscan = FALSE;
+						break;
+					}
+					else numscan = TRUE;
 					if((unsigned)n < (unsigned)1<<28)
 						n = ((unsigned)n<<4) | hextonum(k);
 					else {
 						buf += putnumber(buf, n);
 						*buf++ = c;
-						numscan = FALSE; break;
+						numscan = FALSE;
+						break;
 					}
 				}
 				// only happened if c == NULL
-				if (numscan) buf += putnumber(buf, n);
-				if(!c) source--; // revert back
+				if (numscan)
+					buf += putnumber(buf, n);
+				if(!c)
+					source--; // revert back
 			break;
 			default: *buf++ = c;
 		}
 	}
 	result = buf - first;
-	if (outpos) *outpos = source - base -1;
-	if (c) return -result; // not enough buffersize
+	if (outpos)
+		*outpos = source - base -1;
+	if (c)
+		return -result; // not enough buffersize
 	return result;
 }
