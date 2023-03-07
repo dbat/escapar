@@ -54,16 +54,16 @@ Recognized escaped chars and its interpretation:
 	\v	vertical TAB
 
 	Extension:
-	\xNN locase-x, NN is hex digits, max 2 digits represent byte
-	\XNN UPCASE-X, NN is hex digits, max 8 digits represent dword
-	\yNN locase-y, NN is hex digits, max 4 digits represent word
-	\YNN UPCASE-Y, NN is hex digits, arbitrary digits represent dword 
-	\dNN locase-d, NN is decimal digits, arbitrary digits represent byte (max=255)
-	\DNN UPCASE-D, NN is decimal digits, arbitrary digits represent dword (max=4294967295)
+	\x[N] (locase-x),  [N] is hex digits, max 2 digits represents byte
+	\X[N] (CAPITAL-X), [N] is hex digits, max 8 digits represents dword
+	\y[N] (locase-y),  [N] is hex digits, max 4 digits represents word
+	\Y[N] (CAPITAL-Y), [N] is hex digits, arbitrary length represents dword 
+	\d[N] (locase-d),  [N] is decimal digits, arbitrary length represents byte (max=255)
+	\D[N] (CAPITAL-D), [N] is decimal digits, arbitrary length represents dword (max=4294967295)
 	(any invalid digits will terminate/conclude the interpretation)
 
 	Control characters:
-	\cC C is letter @A..Z[\]^_ represents CTRL-CHARS 00..1F
+	\c[C] where [C] is letter @A..Z[\]^_ represents CTRL-CHARS 00..1F
 		\c@ = 0 (NULL)
 		\cA = 1 [CTRL-A]
 		\cC = 3 [CTRL-C]
@@ -71,6 +71,7 @@ Recognized escaped chars and its interpretation:
 		\cI = 9 [CTRL-I] (TAB)
 		\cZ = 26 [CTRL-Z) (EOF)
 		...
+		\c^ = 30
 		\c_ = 31
-	(any invalid chars will terminate the interpretation)
+	(any invalid/unknown chars will terminate the interpretation)
 
